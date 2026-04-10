@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Nani AI Pallete</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+<div class="main">
+    <h1>✨ Nani AI Pallete</h1>
+    <p>Turn your imagination into art</p>
+
+    <form method="POST" class="form">
+        <input type="text" name="prompt" placeholder="Describe your image..." required>
+
+        <select name="style">
+            <option value="">Default</option>
+            <option value="anime">Anime</option>
+            <option value="realistic">Realistic</option>
+            <option value="fantasy">Fantasy</option>
+            <option value="cinematic">Cinematic</option>
+        </select>
+
+        <button type="submit">Generate</button>
+    </form>
+
+    {% if image_path %}
+    <div class="image-box">
+        <img src="{{ image_path }}">
+        <a href="{{ image_path }}" download class="download-btn">⬇ Download</a>
+    </div>
+    {% endif %}
+</div>
+
+</body>
+</html>
