@@ -14,20 +14,32 @@ def index():
     image_path = None
 
     if request.method == "POST":
-        prompt = request.form.get("prompt")
-        style = request.form.get("style")
+        try:
+            prompt = request.form.get("prompt")
+            style = request.form.get("style")
 
-        if style:
-            prompt += f", {style} style"
+            # ✅ SAFE CHECK
+            if not prompt:
+                return render_template("index.html", image_path=None, error="Please enter a prompt")
 
-        if prompt:
+            if style:
+                prompt = f"{prompt}, {style} style"
+
+            # Generate image
             image = client.text_to_image(
-            prompt=prompt,
-            model="stabilityai/stable-diffusion-xl-base-1.0"
-)
+                prompt=prompt,
+                model="runwayml/stable-diffusion-v1-5"
+            )
+
+            # Ensure folder exists
+            os.makedirs("static", exist_ok=True)
 
             image_path = "static/generated.png"
             image.save(image_path)
+
+        except Exception as e:
+            print("ERROR:", e)
+            return render_template("index.html", image_path=None, error=str(e))
 
     return render_template("index.html", image_path=image_path)
 
