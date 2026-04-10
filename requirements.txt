@@ -3,4 +3,4 @@ gunicorn
 huggingface_hub
 python-dotenv
 requests
-
+pillow

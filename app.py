@@ -1,35 +1,48 @@
-from flask import Flask, render_template, request
-from huggingface_hub import InferenceClient
-from dotenv import load_dotenv
 import os
-
-load_dotenv()
+from flask import Flask, render_template, request, send_from_directory
+from huggingface_hub import InferenceClient
 
 app = Flask(__name__)
 
-client = InferenceClient(api_key=os.getenv("HF_TOKEN"))
+HF_TOKEN = os.getenv("HF_TOKEN")
+
+def generate_image(prompt):
+    if not HF_TOKEN:
+        return None, "HF_TOKEN not set"
+
+    try:
+        client = InferenceClient(
+            provider="nscale",
+            api_key=HF_TOKEN,
+        )
+
+        image = client.text_to_image(
+            prompt,
+            model="stabilityai/stable-diffusion-xl-base-1.0",
+        )
+
+        path = os.path.join("static", "generated.png")
+        image.save(path)
+
+        return path, None
+
+    except Exception as e:
+        return None, str(e)
+
 
 @app.route("/", methods=["GET", "POST"])
-def index():
+def home():
     image_path = None
+    error = None
 
     if request.method == "POST":
         prompt = request.form.get("prompt")
-        style = request.form.get("style")
-
-        if style:
-            prompt += f", {style} style"
 
         if prompt:
-            image = client.text_to_image(
-            prompt=prompt,
-            model="stabilityai/stable-diffusion-xl-base-1.0"
-)
+            image_path, error = generate_image(prompt)
 
-            image_path = "static/generated.png"
-            image.save(image_path)
+    return render_template("index.html", image_path=image_path, error=error)
 
-    return render_template("index.html", image_path=image_path)
 
 if __name__ == "__main__":
     app.run(debug=True)
